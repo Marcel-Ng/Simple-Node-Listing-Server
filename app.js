@@ -1,6 +1,7 @@
 const express =  require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
+const Thing = require('./models/thing');
 const app = express();
 
 // Template for connecting to the mongoose DB
@@ -37,32 +38,57 @@ app.use(bodyParser.json())
 
 app.post('/api/stuff', (req, res, next) => {
     console.log(req.body);
-    res.status(201).json({
-        message: "Your request don reach us"        
-    })
+
+    const thing = new Thing({
+        title: req.body.title,
+        description: req.body.description,
+        imageUrl: req.body.imageUrl,
+        price: req.body.price,
+        userId: req.body.userId
+    });
+    thing.save().then(
+        () => {
+            res.status(201).json({
+                message: "Product saved succefully"
+            });
+        }
+    ).catch(
+        error => {
+            res.status(400).json({
+                error: error
+            })
+        }
+    )
+
 })
 
-app.use('/api/stuff', (req, res, next) => {
-    const stuff = [
-        {
-            _id: 'oeihfzeoi',
-            title: 'My first thing',
-            description: 'All of the info about my first thing',
-            imageUrl: '',
-            price: 4900,
-            userId: 'qsomihvqios',
-        },
-        {
-            _id: 'oeihfzeomoihi',
-            title: 'My second thing',
-            description: 'All of the info about my second thing',
-            imageUrl: '',
-            price: 2900,
-            userId: 'qsomihvqios',
-        },
-    ];
+app.get('/api/stuff/:id', (req, res, next) => {
+    Thing.findOne({
+        _id : req.params.id
+    }).then(
+        thing => {
+            res.status(200).json(thing)
+        }
+    ).catch(
+        error => {
+            res.status(404).json(error)
+        }
+    )
+})
 
-    res.status(200).json(stuff);
+
+app.use('/api/stuff', (req, res, next) => {
+  Thing.find().then(
+      things => {
+          res.status(200).json(things)
+      }
+  ).catch(
+      error => {
+          res.status(400).json({
+              error: error
+          })
+      }
+  )
 })
 
 
