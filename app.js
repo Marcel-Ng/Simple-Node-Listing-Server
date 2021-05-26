@@ -1,7 +1,7 @@
 const express =  require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
-const Thing = require('./models/thing');
+const stuffRoutes = require('./routes/stuff');
 const app = express();
 
 // Template for connecting to the mongoose DB
@@ -31,109 +31,7 @@ app.use((req, res, next) => {
 })
 
 app.use(bodyParser.json())
-// other alternatives to this call above
-// app.use(bodyParser.urlencoded({ extended: true }));
-// app.use(express.urlencoded({extended: true})); 
-// app.use(express.json());   
 
-app.post('/api/stuff', (req, res, next) => {
-    console.log(req.body);
-
-    const thing = new Thing({
-        title: req.body.title,
-        description: req.body.description,
-        imageUrl: req.body.imageUrl,
-        price: req.body.price,
-        userId: req.body.userId
-    });
-    thing.save().then(
-        () => {
-            res.status(201).json({
-                message: "Product saved succefully"
-            });
-        }
-    ).catch(
-        error => {
-            res.status(400).json({
-                error: error
-            })
-        }
-    )
-
-})
-
-app.get('/api/stuff/:id', (req, res, next) => {
-    Thing.findOne({
-        _id : req.params.id
-    }).then(
-        thing => {
-            res.status(200).json(thing)
-        }
-    ).catch(
-        error => {
-            res.status(404).json(error)
-        }
-    )
-})
-
-
-app.put('/api/stuff/:id', (req, res, next) => {
-    const thing = new Thing({
-         _id: req.params.id,
-        title: req.body.title,
-        description: req.body.description,
-        imageUrl: req.body.imageUrl,
-        price: req.body.price,
-        userId: req.body.userId
-    });
-
-    Thing.updateOne({
-        _id: req.params.id
-    }, thing).then(
-        () => {
-           res.status(201).json({
-               message : "Thing updated successgully"
-           })
-        }
-    ).catch(
-        error => {
-            res.status(400).json({
-                error: error
-            })
-        }
-    )
-
-});
-
-app.delete('/api/stuff/:id', (req, res, next) => {
-    Thing.deleteOne({
-        _id: req.params.id
-    }).then(
-        thing => {
-            res.status(200).json({message: "Content deleted"})
-        }
-    ).catch(
-        error => {
-            res.status(404).json({
-                message: error
-            })
-        }
-    )
-})
-
-app.use('/api/stuff', (req, res, next) => {
-  Thing.find().then(
-      things => {
-          res.status(200).json(things)
-      }
-  ).catch(
-      error => {
-          res.status(400).json({
-              error: error
-          })
-      }
-  )
-})
-
+app.use('/api/stuff', stuffRoutes)
 
 module.exports = app;
